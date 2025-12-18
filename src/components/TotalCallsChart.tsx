@@ -11,7 +11,7 @@ type Props = {
   data: { day: string; calls: number }[];
 };
 
-export default function CallChart({ data }: Props) {
+export default function TotalCallsChart({ data }: Props) {
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
@@ -28,7 +28,9 @@ export default function CallChart({ data }: Props) {
             stroke="rgba(255,255,255,0.4)"
             axisLine={false}
             tickLine={false}
+            padding={{ left: 20, right: 20 }}
           />
+
           <YAxis
             stroke="rgba(255,255,255,0.4)"
             axisLine={false}
@@ -36,21 +38,21 @@ export default function CallChart({ data }: Props) {
           />
 
           <Tooltip
+            cursor={{ stroke: "rgba(255,255,255,0.2)", strokeWidth: 1 }}
             contentStyle={{
               backgroundColor: "rgba(15, 23, 42, 0.95)",
               border: "1px solid rgba(255,255,255,0.15)",
               borderRadius: "8px",
-              color: "#ffffff",
               padding: "4px 8px",
             }}
             labelStyle={{
-              color: "#e5e7eb",
-              fontWeight: 600,
+              color: "rgba(255,255,255,0.9)",
+              fontWeight: 500,
             }}
             itemStyle={{
               color: "#93c5fd",
+              fontSize: "13px",
             }}
-            cursor={{ stroke: "rgba(255,255,255,0.2)", strokeWidth: 1 }}
           />
 
           <Area

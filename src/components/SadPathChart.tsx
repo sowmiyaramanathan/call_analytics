@@ -25,17 +25,13 @@ export default function SadPathChart() {
               <Cell key={index} fill={COLORS[index]} />
             ))}
           </Pie>
+
           <Tooltip
             contentStyle={{
               backgroundColor: "rgba(15, 23, 42, 0.95)",
               border: "1px solid rgba(255,255,255,0.15)",
               borderRadius: "8px",
-              color: "#ffffff",
               padding: "4px 8px",
-            }}
-            labelStyle={{
-              color: "#e5e7eb",
-              fontWeight: 600,
             }}
             itemStyle={{
               color: "#e5e7eb",
