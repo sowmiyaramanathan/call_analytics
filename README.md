@@ -1,5 +1,4 @@
 # Voice Agent Analytics Dashboard
-
 A React + TS web application that visualizes voice agent call analytics with an interactive, SuperBryn-inspired dark analytics theme. Users can input custom data and visualize insights through dynamic charts.
 
 ## 🚀 Live Demo
@@ -16,18 +15,21 @@ https://voice-agent-analytics-dashboard.vercel.app/
 * Charts are updated instantly based on user input
 
 ## 📊 Features
-1. Call Analytics (Area Chart)
+#### Call Analytics (Area Chart)
 * Visualizes call volume trends
 * Data updates dynamically when the user saves new values
 * Styled for dark dashboards with custom gradients and tooltips
 
-2. Sad Path Analysis (Donut Chart)
+#### Sad Path Analysis (Donut Chart)
 * Represents common failure scenarios in voice agents
 * Uses dummy data
 
-3. Email-Based Persistence
-* User data is stored in Supabase keyed by email
-* On re-entry of calls data, previous values are shown with overwrite confirmation
+#### Custom Data Input
+* Users can provide custom analytics data via a floating “Custom Data” panel
+* Supports updating **Call Volume** or **Call Duration**
+* Data is persisted per email using Supabase
+* Existing values are shown before overwrite
+* Panel can be dismissed using the **ESC key** for quick interaction
 
 ## 🛠 Tech Stack
 * Frontend: React + TypeScript
