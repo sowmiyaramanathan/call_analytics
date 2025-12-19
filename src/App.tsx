@@ -39,10 +39,16 @@ export default function App() {
   // draft for custom data panel
   const [draftCallData, setDraftCallData] = useState<DayValue[]>([]);
   const [draftDurationData, setDraftDurationData] = useState<DayValue[]>([]);
-  
+
   // committed data for charts
   const [callData, setCallData] = useState<DayValue[]>(defaultTotalCallData);
-  const [durationData, setDurationData] = useState<DayValue[]>(defaultCallDurationData);
+  const [durationData, setDurationData] = useState<DayValue[]>(
+    defaultCallDurationData
+  );
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [prevSeries, setPrevSeries] = useState<any[]>([]);
+  const [pendingSave, setPendingSave] = useState(false);
 
   // ESC key to close panel
   useEffect(() => {
@@ -78,25 +84,16 @@ export default function App() {
       .eq("email", email)
       .single();
 
-      if (existing) {
-        const prevSeries =
-          mode === "calls"
-            ? existing.call_series
-            : existing.duration_series;
-      
-        if (prevSeries && Array.isArray(prevSeries)) {
-          const summary = prevSeries
-            .map((d: any) => `${d.day}: ${d.value}`)
-            .join(", ");
-      
-          const ok = confirm(
-            `Previous ${mode === "calls" ? "call volume" : "call duration"} data exists:\n\n${summary}\n\nOverwrite?`
-          );
-      
-          if (!ok) return;
-        }
+    if (existing && !pendingSave) {
+      const series =
+        mode === "calls" ? existing.call_series : existing.duration_series;
+
+      if (Array.isArray(series) && series.length > 0) {
+        setPrevSeries(series);
+        setShowConfirm(true);
+        return;
       }
-      
+    }
 
     const payload = {
       email,
@@ -110,13 +107,14 @@ export default function App() {
     // close panel and commit
     setCallData(draftCallData);
     setDurationData(draftDurationData);
-
+    setPendingSave(false);
+    setPrevSeries([]);
     closePanel();
   };
 
   const activeDraft = mode === "calls" ? draftCallData : draftDurationData;
-
-  const setActiveDraft = mode === "calls" ? setDraftCallData : setDraftDurationData;
+  const setActiveDraft =
+    mode === "calls" ? setDraftCallData : setDraftDurationData;
 
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_#4f46e5_0%,_#0b1020_60%)] text-white">
@@ -124,7 +122,9 @@ export default function App() {
         {/* Title */}
         <div className="text-center">
           <h1 className="text-4xl font-semibold mb-2">Voice Agent Analytics</h1>
-          <p className="text-white/70">Observability insights for voice agents</p>
+          <p className="text-white/70">
+            Observability insights for voice agents
+          </p>
         </div>
 
         {/* Charts Dashboard */}
@@ -134,7 +134,7 @@ export default function App() {
               Call Volume
             </h3>
             <TotalCallsChart
-              data={callData.map(d => ({
+              data={callData.map((d) => ({
                 day: d.day,
                 calls: d.value,
               }))}
@@ -146,7 +146,7 @@ export default function App() {
               Call Duration in Seconds
             </h3>
             <CallDurationChart
-              data={durationData.map(d => ({
+              data={durationData.map((d) => ({
                 day: d.day,
                 duration: d.value,
               }))}
@@ -155,14 +155,14 @@ export default function App() {
 
           <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6">
             <h3 className="text-sm uppercase text-white/60 mb-4">
-            Sad Path Analysis
+              Sad Path Analysis
             </h3>
             <SadPathChart />
           </div>
 
           <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6">
             <h3 className="text-sm uppercase text-white/60 mb-4">
-            Failure by Pipeline Stage
+              Failure by Pipeline Stage
             </h3>
             <FailureStageChart />
           </div>
@@ -192,7 +192,7 @@ export default function App() {
         >
           <div className="bg-[#0b1020] border border-white/10 rounded-t-2xl p-6">
             <div className="flex justify-between items-center mb-4">
-            <h2 className="text-sm uppercase tracking-wide text-white/60">
+              <h2 className="text-sm uppercase tracking-wide text-white/60">
                 Input Custom Data
               </h2>
               <button
@@ -219,9 +219,7 @@ export default function App() {
                   key={m}
                   onClick={() => setMode(m as Mode)}
                   className={`px-3 py-1 rounded text-sm ${
-                    mode === m
-                      ? "bg-indigo-500"
-                      : "bg-white/10 text-white/70"
+                    mode === m ? "bg-indigo-500" : "bg-white/10 text-white/70"
                   }`}
                 >
                   {m === "calls" ? "Call Volume" : "Duration"}
@@ -233,18 +231,14 @@ export default function App() {
             <div className="grid grid-cols-2 gap-4">
               {activeDraft.map((item, idx) => (
                 <div key={item.day}>
-                  <label className="text-xs text-white/60">
-                    {item.day}
-                  </label>
+                  <label className="text-xs text-white/60">{item.day}</label>
                   <input
                     type="number"
                     value={item.value}
                     onChange={(e) => {
                       const v = Number(e.target.value);
-                      setActiveDraft(prev =>
-                        prev.map((d, i) =>
-                          i === idx ? { ...d, value: v } : d
-                        )
+                      setActiveDraft((prev) =>
+                        prev.map((d, i) => (i === idx ? { ...d, value: v } : d))
                       );
                     }}
                     className="mt-1 w-full bg-black/40 border border-white/10 rounded px-3 py-1"
@@ -255,10 +249,7 @@ export default function App() {
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-6">
-              <button
-                onClick={closePanel}
-                className="text-white/60"
-              >
+              <button onClick={closePanel} className="text-white/60">
                 Cancel
               </button>
               <button
@@ -270,6 +261,53 @@ export default function App() {
             </div>
           </div>
         </div>
+
+        {/* Displaying overwrite confirmation */}
+        {showConfirm && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+            <div className="bg-[#0b1020] p-6 rounded-xl border border-white/10 w-[360px]">
+              <h3 className="text-sm text-white/80 mb-2">
+                Previous data exists
+              </h3>
+
+              <div className="text-xs text-white/60 mb-4 space-y-1">
+                {prevSeries.map((d) => (
+                  <div key={d.day} className="flex justify-between">
+                    <span>{d.day}</span>
+                    <span>{d.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-white/50 mb-4">
+                Do you want to overwrite this data?
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowConfirm(false);
+                    setPrevSeries([]);
+                  }}
+                  className="text-white/60"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowConfirm(false);
+                    setPendingSave(true);
+                    save();
+                  }}
+                  className="bg-indigo-500 px-4 py-1 rounded"
+                >
+                  Overwrite
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
