@@ -59,6 +59,12 @@ export default function App() {
     return () => window.removeEventListener("keydown", onEsc);
   }, []);
 
+  useEffect(() => {
+    if (pendingSave) {
+      save();
+    }
+  }, [pendingSave]);
+
   const openPanel = async () => {
     setDraftCallData(JSON.parse(JSON.stringify(callData)));
     setDraftDurationData(JSON.parse(JSON.stringify(durationData)));
@@ -298,7 +304,6 @@ export default function App() {
                   onClick={() => {
                     setShowConfirm(false);
                     setPendingSave(true);
-                    save();
                   }}
                   className="bg-indigo-500 px-4 py-1 rounded"
                 >
